@@ -11,6 +11,17 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script>
+// 카톡·라인 등 앱 내 브라우저에서 열리면 기본 브라우저로 바로 넘깁니다 (위치 권한·앱 설치가 막히기 때문)
+(function(){
+  var ua=navigator.userAgent||'', url=location.href;
+  window.__INAPP=null;
+  if(/KAKAOTALK/i.test(ua)){window.__INAPP='카카오톡';location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url);}
+  else if(/ Line\//i.test(ua)){window.__INAPP='라인';if(!/openExternalBrowser=1/.test(url))location.replace(url+(url.indexOf('?')<0?'?':'&')+'openExternalBrowser=1');}
+  else if(/Instagram|FBAN|FBAV|NAVER\(inapp|DaumApps|everytimeApp|band\//i.test(ua)){window.__INAPP='앱 내 브라우저';
+    if(/Android/i.test(ua))location.href='intent://'+url.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end';}
+})();
+</script>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 <title>대리콜지수</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -336,6 +347,29 @@ setInterval(()=>{if(!st.when)render()},60000);
 })();
 </script>
 
+<div id="inapp" hidden style="position:fixed;inset:auto 0 0 0;z-index:50;background:#f2a93b;color:#1b1408;padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:14px;line-height:1.5;box-shadow:0 -6px 20px rgb(0 0 0/.3)">
+  <b id="inappT">카톡 안에서는 GPS가 막힐 수 있어요</b><br>
+  <span id="inappD">아래 버튼을 누르거나, 오른쪽 위 ⋮(또는 공유) 메뉴에서 <b>다른 브라우저로 열기</b>를 눌러 주세요.</span>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <button id="inappGo" type="button" style="font:inherit;font-weight:700;background:#1b1408;color:#f2a93b;border:0;border-radius:10px;padding:9px 14px">기본 브라우저로 열기</button>
+    <button id="inappX" type="button" style="font:inherit;background:transparent;color:#1b1408;border:1px solid #1b1408;border-radius:10px;padding:9px 14px">여기서 계속</button>
+  </div>
+</div>
+<script>
+(function(){
+  if(!window.__INAPP)return;
+  var ua=navigator.userAgent, url=location.href.replace(/[?&]openExternalBrowser=1/,'');
+  var box=document.getElementById('inapp');
+  document.getElementById('inappT').textContent=window.__INAPP+' 안에서는 GPS·앱 설치가 막힐 수 있어요';
+  setTimeout(function(){box.hidden=false},1200);
+  document.getElementById('inappGo').onclick=function(){
+    if(/KAKAOTALK/i.test(ua))location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url);
+    else if(/Android/i.test(ua))location.href='intent://'+url.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end';
+    else {try{navigator.clipboard.writeText(url)}catch(e){} document.getElementById('inappD').textContent='주소를 복사했어요. Safari를 열고 주소창에 붙여넣으세요: '+url;}
+  };
+  document.getElementById('inappX').onclick=function(){box.hidden=true};
+})();
+</script>
 <script>
 if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
 </script>

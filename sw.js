@@ -1,5 +1,5 @@
 // 오프라인에서도 열리도록 앱 파일을 캐시합니다. 파일을 고치면 VERSION 숫자를 올리세요.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = 'daeri-' + VERSION;
 const FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
